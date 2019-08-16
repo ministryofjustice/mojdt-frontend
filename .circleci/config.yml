@@ -9,3 +9,65 @@ defaults: &defaults
   docker:
     - image: circleci/node:10.15.1
 
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: npm install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run:
+          name: Build npm package
+          command: npm run build:package
+
+      - persist_to_workspace:
+          root: .
+          paths: .
+
+  publish:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo/
+          
+      - run:
+          name: Authenticate with npm registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > ~/repo/.npmrc
+
+      - run:
+          name: Publish package to npm
+          command: npm publish package/
+
+  release:
+    <<: *defaults
+    steps:
+      - run:
+          name: Get version from the version file
+          command: VERSION_TAG="v`cat VERSION.md`"
+
+      - run:
+          name: Check that there's not a tag for the current version already
+          command: |
+            if ! git rev-parse $VERSION_TAG >/dev/null 2>&1; then
+              echo "🏷 Creating new tag: $VERSION_TAG"
+              
+              git tag $VERSION_TAG
+              git push origin_ssh $VERSION_TAG
+
+              echo "💨 Pushing latest-release branch to GitHub"
+              git push --force origin_ssh master:latest-release
+            else
+              echo "😴 Current version already exists as a tag on GitHub. Nothing to do."
+            fi
