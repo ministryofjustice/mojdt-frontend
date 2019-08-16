@@ -44,6 +44,7 @@ jobs:
           
       - run:
           name: Authenticate with npm registry
+          # set auth token in the environment variables for the frontend in circleci dashboard
           command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > ~/repo/.npmrc
 
       - run:
@@ -81,6 +82,7 @@ workflows:
             only: master
 
       # only publish if build is successful
+      # TODO only publish if the version is new
       - publish:
           requires:
             - build
