@@ -71,3 +71,23 @@ jobs:
             else
               echo "😴 Current version already exists as a tag on GitHub. Nothing to do."
             fi
+
+workflows:
+  version: 2
+  build-publish:
+    jobs:
+      - build:
+          branches:
+            only: master
+
+      # only publish if build is successful
+      - publish:
+          requires:
+            - build
+          branches:
+            only: master
+
+      # only create release if publish is successful
+      - release:
+          requires:
+            - publish
