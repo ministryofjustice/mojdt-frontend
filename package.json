@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "start": "gulp",
-    "build:package": "node bin/check-nvmrc.js && gulp build:package"
+    "build:package": "node bin/check-nvmrc.js && gulp build:package",
+    "build:dist": "node bin/check-nvmrc.js && gulp build:dist"
   },
   "repository": {
     "type": "git",

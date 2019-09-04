@@ -29,6 +29,20 @@ gulp.task('build:package', gulp.series(
   'build:compress-images'
 ));
 
+gulp.task('build:dist', gulp.series(
+  'dist:clean',
+  'dist:copy-assets'
+));
+
+/*
+gulp.task('build:dist', gulp.series(
+  'clean',
+  'copy-assets',
+  'copy:assets',
+  'update-assets-version'
+))
+*/
+
 gulp.task('default', gulp.series(
   'generate-assets',
   gulp.parallel(
